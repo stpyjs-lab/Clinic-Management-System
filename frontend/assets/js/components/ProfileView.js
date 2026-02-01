@@ -68,7 +68,8 @@ export function renderEnrollmentsTable(rows) {
 export function renderPatientBasic(patient) {
   setText("patientId", patient?.id ?? "—");
   setText("patientName", `${patient?.first_name ?? ""} ${patient?.last_name ?? ""}`.trim() || "—");
-  setText("patientEmail", patient?.email ?? "—");
+  setText("patientAge", patient?.age ?? "—");
+  setText("patientGender", patient?.gender ?? "—");
   setText("patientPhone", patient?.phone ?? "—");
 }
 
@@ -103,15 +104,7 @@ export function renderBillsTable(rows, doctorMap) {
   });
 }
 
-export function renderPatientDoctors(list) {
-  const el = $("patientDoctors");
-  if (!el) return;
-  if (!list || list.length === 0) {
-    el.textContent = "—";
-    return;
-  }
-  el.innerHTML = list.map(d => `<div class=\"mb-1\"><span class=\"font-medium\">${d.name}</span> <span class=\"text-xs text-gray-500\">${d.specialty || ''}</span></div>`).join("");
-}
+
 
 export function renderProfileError() {
   setProfileLoading(false);

@@ -17,7 +17,6 @@ import {
   renderPatientBasic,
   renderBillCount,
   renderBillsTable,
-  renderPatientDoctors,
 } from "../components/ProfileView.js";
 import { buildPrintableTableHTML } from "../utils/printTable.js";
 
@@ -45,19 +44,6 @@ export async function initProfileController(id) {
       renderBillCount(bills.length);
       renderBillsTable(bills, docMap);
 
-      // Render assigned doctors (unique from bills)
-      const uniqueDoctors = [];
-      const seen = new Set();
-      bills.forEach(b => {
-        if (b.doctor_id && !seen.has(b.doctor_id)) {
-          seen.add(b.doctor_id);
-          const name = b.doctor_name || docMap.get(b.doctor_id);
-          const spec = doctors.find(d=>d.id===b.doctor_id)?.specialty || '';
-          uniqueDoctors.push({ name, specialty: spec });
-        }
-      });
-      // expose render for doctors (component)
-      if (typeof renderPatientDoctors === 'function') renderPatientDoctors(uniqueDoctors);
 
       // exports
       $("profileExportCsvBtn")?.addEventListener("click", () => {
