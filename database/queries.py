@@ -27,7 +27,8 @@ from .connection import get_connection
 
 def patients_get_all():
     conn = get_connection()
-    rows = conn.execute("SELECT * FROM patients ORDER BY id DESC").fetchall()
+    # Fetch patients in insertion order (oldest first) — prefer created_at, fall back to id
+    rows = conn.execute("SELECT * FROM patients ORDER BY created_at ASC, id ASC").fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -105,7 +106,8 @@ def patients_delete(patient_id: int):
 
 def doctors_get_all():
     conn = get_connection()
-    rows = conn.execute("SELECT * FROM doctors ORDER BY id DESC").fetchall()
+    # Fetch doctors in insertion order (oldest first) — prefer created_at, fall back to id
+    rows = conn.execute("SELECT * FROM doctors ORDER BY created_at ASC, id ASC").fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -248,7 +250,8 @@ def invoices_get_all():
         FROM invoices i
         LEFT JOIN patients p ON p.id = i.patient_id
         LEFT JOIN doctors d ON d.id = i.doctor_id
-        ORDER BY i.id DESC
+        -- Put rows with a non-null created_at first, then order by created_at and id
+        ORDER BY (i.created_at IS NULL) ASC, i.created_at ASC, i.id ASC
     """).fetchall()
     conn.close()
     return [dict(r) for r in rows]

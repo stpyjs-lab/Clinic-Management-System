@@ -14,12 +14,12 @@ export function renderBillingTable(invoices) {
 
   noInvoices.style.display = "none";
 
-  invoices.forEach((a) => {
+  invoices.forEach((a, i) => {
     const row = document.createElement("tr");
     row.className = "border-b";
 
     row.innerHTML = `
-      <td class="px-3 py-2">${a.id}</td>
+      <td class="px-3 py-2">${i + 1}</td>
       <td class="px-3 py-2 font-medium text-gray-900">${a.patient_name || a.patient_id}</td>
       <td class="px-3 py-2">${a.doctor_name || a.doctor_id || ""}</td>
       <td class="px-3 py-2">${a.issued_on || ""}</td>

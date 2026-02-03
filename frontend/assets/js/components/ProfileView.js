@@ -65,8 +65,15 @@ export function renderEnrollmentsTable(rows) {
 }
 
 // Patient functions
-export function renderPatientBasic(patient) {
-  setText("patientId", patient?.id ?? "—");
+export function renderPatientBasic(patient, serial) {
+  // Show a friendly serial number (when available) and only fall back to DB id when serial is not available.
+  // Example: "1" or fallback to "56" if serial cannot be computed.
+  if (serial != null) {
+    setText("patientId", `${serial}`);
+  } else {
+    setText("patientId", patient?.id ?? "—");
+  }
+
   setText("patientName", `${patient?.first_name ?? ""} ${patient?.last_name ?? ""}`.trim() || "—");
   setText("patientAge", patient?.age ?? "—");
   setText("patientGender", patient?.gender ?? "—");
@@ -89,11 +96,19 @@ export function renderBillsTable(rows, doctorMap) {
 
   show("noBills", false);
 
-  rows.forEach((r) => {
+  // Ensure header label shows 'No.' to match serial numbers
+  try {
+    const headerFirst = document.querySelector('#billsTableContainer thead th');
+    if (headerFirst) headerFirst.textContent = 'No.';
+  } catch (e) {
+    // ignore
+  }
+
+  rows.forEach((r, i) => {
     const tr = document.createElement("tr");
     tr.className = "border-b";
     tr.innerHTML = `
-      <td class="px-3 py-2">${r.id ?? "-"}</td>
+      <td class="px-3 py-2">${i + 1}</td>
       <td class="px-3 py-2">${r.doctor_name ?? doctorMap.get(r.doctor_id) ?? "-"}</td>
       <td class="px-3 py-2">${doctorMap.get(r.doctor_id + "__spec") ?? "-"}</td>
       <td class="px-3 py-2">${r.amount ?? "-"}</td>

@@ -14,12 +14,12 @@ export function renderPatientTable(patients) {
 
   noPatients.style.display = "none";
 
-  patients.forEach((p) => {
+  patients.forEach((p, i) => {
     const row = document.createElement("tr");
     row.className = "border-b";
 
     row.innerHTML = `
-      <td class="px-3 py-2">${p.id}</td>
+      <td class="px-3 py-2">${i + 1}</td>
       <td class="px-3 py-2 font-medium text-gray-900">${p.first_name} ${p.last_name}</td>
       <td class="px-3 py-2">${p.age != null ? p.age : "-"}</td>
       <td class="px-3 py-2">${p.gender || "-"}</td>

@@ -9,11 +9,11 @@ export function renderDoctorTable(doctors) {
     return;
   }
   noDoctors.style.display = "none";
-  doctors.forEach((d) => {
+  doctors.forEach((d, i) => {
     const row = document.createElement("tr");
     row.className = "border-b";
     row.innerHTML = `
-      <td class="px-3 py-2">${d.id}</td>
+      <td class="px-3 py-2">${i + 1}</td>
       <td class="px-3 py-2 font-medium text-gray-900">${d.name}</td>
       <td class="px-3 py-2">${d.specialty || ""}</td>
       <td class="px-3 py-2">${d.schedule || "-"}</td>

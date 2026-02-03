@@ -64,6 +64,8 @@ export async function createNewInvoice(data) {
     showAlert("Invoice created!");
     resetForm();
     loadInvoices();
+    // Notify interested parts of the app that invoices changed (e.g., profile view)
+    try { window.dispatchEvent(new CustomEvent('invoices:changed', { detail: { patient_id: data.patient_id } })); } catch (e) {}
   }
 }
 
@@ -81,6 +83,7 @@ export async function updateInvoice(id, data) {
     resetForm();
     setState({ editingId: null });
     loadInvoices();
+    try { window.dispatchEvent(new CustomEvent('invoices:changed', { detail: { patient_id: data.patient_id } })); } catch (e) {}
   }
 }
 
@@ -89,5 +92,6 @@ export async function deleteInvoiceAction(id) {
   if (res.ok) {
     showAlert("Deleted!");
     loadInvoices();
+    try { window.dispatchEvent(new CustomEvent('invoices:changed', { detail: {} })); } catch (e) {}
   }
 }

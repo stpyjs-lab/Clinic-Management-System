@@ -72,6 +72,7 @@ export async function createNewPatient(data) {
     showAlert("Patient added!");
     resetForm();
     loadPatients();
+    try { window.dispatchEvent(new CustomEvent('patients:changed', { detail: { patient_id: res?.id || null } })); } catch (e) {}
   }
 }
 
@@ -93,6 +94,7 @@ export async function updatePatient(id, data) {
     resetForm();
     setState({ editingId: null });
     loadPatients();
+    try { window.dispatchEvent(new CustomEvent('patients:changed', { detail: { patient_id: id } })); } catch (e) {}
   }
 }
 
@@ -101,5 +103,6 @@ export async function deletePatientAction(id) {
   if (res.ok) {
     showAlert("Deleted!");
     loadPatients();
+    try { window.dispatchEvent(new CustomEvent('patients:changed', { detail: { patient_id: id } })); } catch (e) {}
   }
 }

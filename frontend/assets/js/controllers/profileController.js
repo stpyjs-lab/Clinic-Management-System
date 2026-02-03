@@ -24,6 +24,30 @@ export async function initProfileController(id) {
   console.debug("[profileController] init", id);
   setProfileLoading(true);
 
+  // Listen for global changes so profile updates live when patient/invoices are created/updated
+  if (typeof window !== 'undefined') {
+    // remove previous listeners to avoid duplicates
+    try { window.removeEventListener('invoices:changed', window.__profiles_invoices_listener); } catch (e) {}
+    try { window.removeEventListener('patients:changed', window.__profiles_patients_listener); } catch (e) {}
+
+    window.__profiles_invoices_listener = async (evt) => {
+      // If the change concerns this patient (or no patient specified), reload the profile
+      if (!evt || !evt.detail || !evt.detail.patient_id || Number(evt.detail.patient_id) === Number(id)) {
+        console.debug('[profileController] invoices:changed -> reloading profile', evt && evt.detail);
+        try { await initProfileController(id); } catch (e) { console.warn('reload failed', e); }
+      }
+    };
+
+    window.__profiles_patients_listener = async (evt) => {
+      // Recompute serial if patient list changed; simply reload
+      console.debug('[profileController] patients:changed -> reloading profile', evt && evt.detail);
+      try { await initProfileController(id); } catch (e) { console.warn('reload failed', e); }
+    };
+
+    window.addEventListener('invoices:changed', window.__profiles_invoices_listener);
+    window.addEventListener('patients:changed', window.__profiles_patients_listener);
+  }
+
   try {
     // Try patient first (clinic flow)
     const patient = await apiGetPatient(id);
@@ -31,16 +55,36 @@ export async function initProfileController(id) {
 
     if (patient) {
       // Clinic profile: fetch invoices and doctors
-      const [invoices, doctors] = await Promise.all([apiGetAllInvoices(), apiGetAllDoctors()]);
+      const [invoices, doctors, allPatients] = await Promise.all([apiGetAllInvoices(), apiGetAllDoctors(), import('../services/patientService.js').then(m => m.apiGetAll())]);
       console.debug("[profileController] invoices, doctors ->", invoices?.length, doctors?.length);
 
-      const bills = (invoices || []).filter((inv) => inv.patient_id === patient.id).sort((a,b)=>b.id - a.id);
+      // Filter invoices belonging to this patient and order by insertion time (oldest first)
+      const bills = (invoices || [])
+        .filter((inv) => inv.patient_id === patient.id)
+        .sort((a, b) => {
+          // Prefer created_at when present, otherwise fall back to id
+          const aTime = a.created_at ? new Date(a.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+          const bTime = b.created_at ? new Date(b.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+          if (aTime !== bTime) return aTime - bTime;
+          return a.id - b.id;
+        });
       const docMap = new Map((doctors||[]).map(d => [d.id, d.name]));
       // also map specialty under key 'id__spec'
       doctors?.forEach(d => docMap.set(d.id + "__spec", d.specialty || ""));
 
-      // Render UI
-      renderPatientBasic(patient);
+      // Compute serial number for this patient based on the patients list order
+      let serial = null;
+      try {
+        if (allPatients && Array.isArray(allPatients)) {
+          const idx = allPatients.findIndex(p => p.id === patient.id);
+          if (idx !== -1) serial = idx + 1;
+        }
+      } catch (e) {
+        console.warn('[profileController] could not compute patient serial', e);
+      }
+
+      // Render UI (pass serial when available)
+      renderPatientBasic(patient, serial);
       renderBillCount(bills.length);
       renderBillsTable(bills, docMap);
 

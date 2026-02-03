@@ -16,12 +16,20 @@ export function renderProfilesTable(students) {
 
   if (noProfiles) noProfiles.style.display = "none";
 
-  students.forEach((s) => {
+  // Ensure the header label matches the serial number rendering (No.)
+  try {
+    const headerFirst = document.querySelector('#profilesTableContainer thead th');
+    if (headerFirst) headerFirst.textContent = 'No.';
+  } catch (e) {
+    // ignore if DOM not available (defensive)
+  }
+
+  students.forEach((s, i) => {
     const tr = document.createElement("tr");
     tr.className = "border-b";
 
     tr.innerHTML = `
-      <td class="px-3 py-2">${s.id}</td>
+      <td class="px-3 py-2">${i + 1}</td>
 
       <td class="px-3 py-2">
         <a href="/profiles/${s.id}" data-link class="text-blue-600 hover:underline font-medium">

@@ -51,12 +51,14 @@
 
     <!-- JS Modules -->
     <script type="module">
-        import { loadComponent } from "/frontend/assets/js/utils/loadComponent.js";
-        import { initRouterEvents, router } from "/frontend/assets/js/router/viewRouter.js";
+        // Cache-busting dynamic imports so updated modules are fetched during development
+        const v = Date.now();
+        const { loadComponent } = await import(`/frontend/assets/js/utils/loadComponent.js?${v}`);
+        const { initRouterEvents, router } = await import(`/frontend/assets/js/router/viewRouter.js?${v}`);
 
-        // Load header/footer templates
-        loadComponent("#header", "/frontend/assets/js/components/Header.html");
-        loadComponent("#footer", "/frontend/assets/js/components/Footer.html");
+        // Load header/footer templates (also cache-busted)
+        loadComponent("#header", `/frontend/assets/js/components/Header.html?${v}`);
+        loadComponent("#footer", `/frontend/assets/js/components/Footer.html?${v}`);
 
         initRouterEvents();
         router();

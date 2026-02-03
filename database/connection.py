@@ -88,5 +88,22 @@ def init_database():
     """)
 
     conn.commit()
+
+    # /––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––\
+    # Remove any demo/sample rows that may exist in the DB from earlier runs.
+    # This ensures the app does NOT show sample "Test" patients or demo doctors
+    # automatically — records should only be added when a user creates them.
+    # (Conservative filters: remove obvious test/demo names only.)
+    # \––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––/
+    try:
+        conn.execute("DELETE FROM patients WHERE first_name LIKE '%Test%'")
+        conn.execute("DELETE FROM patients WHERE last_name LIKE '%Test%'")
+        conn.execute("DELETE FROM doctors WHERE name = 'Dr. Who'")
+        conn.execute("DELETE FROM doctors WHERE name LIKE '%Dr. Who%'")
+        conn.commit()
+    except Exception:
+        # If deletion fails for any reason, continue without blocking startup
+        pass
+
     conn.close()
     print("✓ Database initialized")
